@@ -1,5 +1,5 @@
 from playwright.sync_api import Page, expect
-
+import allure
 
 class LoginPage:
     URL = "https://www.saucedemo.com/"
@@ -15,12 +15,22 @@ class LoginPage:
         self.error_message = page.locator("h3[data-test=error]")
 
     def open(self):
-        self.page.goto(self.URL)
+        with allure.step(f"Open page {self.URL}"):
+            self.page.goto(self.URL)
 
     def login(self, user: str, password: str):
-        self.username_input.fill(user)
-        self.password_input.fill(password)
-        self.login_button.click()
+        with allure.step(f"Filling username"):
+            self.username_input.fill(user)
+        with allure.step(f"Filling password"):
+            self.password_input.fill(password)
+        with allure.step(f"Clcking on login button"):
+            self.login_button.click()
 
     def assert_error(self, text: str):
-        expect(self.error_message).to_contain_text(text)
+        with allure.step(f"Check error message contains: {text}"):
+            expect(self.error_message).to_contain_text(text)
+
+    def assert_logged_in(self):
+        with allure.step("Verify user is logged in"):
+            expect(self.page).to_have_url("https://www.saucedemo.com/inventory.html")
+            expect(self.page.locator(".inventory_list")).to_be_visible()
