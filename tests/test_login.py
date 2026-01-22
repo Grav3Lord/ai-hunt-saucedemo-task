@@ -11,10 +11,13 @@ def login_page(page):
 
 
 @pytest.mark.usefixtures("login_page")
+@allure.suite("Authorization")
 class TestLoginPage:
 
-    @allure.title("Successful login")
+    @allure.title("Successful login with valid creds")
     @allure.feature("Login")
+    @allure.story("User logins with valid creds")
+    @allure.description("Verifies that a standard user can successfully authenticate using valid credentials.")
     def test_succesful_login(self, login_page):
         login_page.login("standard_user", "secret_sauce")
         login_page.assert_logged_in()
@@ -23,6 +26,7 @@ class TestLoginPage:
     @allure.title("Unsuccessful login")
     @allure.feature("Login")
     @allure.story("User logins with bad credentials")
+    @allure.description("Checks error messages for invalid password, locked-out user, and missing username/password.")
     @pytest.mark.parametrize("user, pwd, error", [
         ("standard_user", "wrong_password", LoginPage.ERROR_WRONG_PASSWORD),
         ("locked_out_user", "secret_sauce", LoginPage.ERROR_LOCKED_OUT),
@@ -32,9 +36,11 @@ class TestLoginPage:
         login_page.login(user, pwd)
         login_page.assert_error(error)
 
-    @allure.title("Successful login")
+    @allure.title("Successful login with glitched user creds")
     @allure.feature("Login")
-    @allure.story("Performance glitched user tries to login")
+    @allure.story("Performance glitch user logs in despite delayed response")
+    @allure.description(
+        "Ensures that the performance_glitch_user can authenticate successfully even with increased page load time.")
     def test_performance_glitch_user(self, login_page):
         expect(login_page.page).to_have_url("https://www.saucedemo.com/")
         login_page.login("performance_glitch_user", "secret_sauce")
